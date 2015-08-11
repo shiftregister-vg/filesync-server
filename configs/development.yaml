@@ -1,0 +1,154 @@
+# Copyright 2008-2015 Canonical
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# For further info, check  http://launchpad.net/filesync-server
+
+general:
+    environment_name: development
+    log_folder: tmp
+    log_level: 5
+    log_to_syslog: False
+    log_format: "%(asctime)s %(levelname)-8s %(name)s[%(process)d]: %(message)s"
+    syslog_format: "%(processName)-13s %(levelname)-8s %(name)s[%(process)d]: %(message)s"
+    app_name: filesync
+    service_group: filesync
+    service_name: server
+    instance_id: 1
+
+api_server:
+    delta_max_size: 1000
+    gc_debug: True
+    get_from_scratch_limit: 2000  # limit of each get_from_scratch DB call
+    graceful_shutdown: True
+    heartbeat_interval: 5
+    idle_timeout: 7200  # 2 hours idle timeout
+    log_filename: filesync-server.log
+    logger_name: storage.server
+    magic_upload_active: True
+    max_delta_info: 20  # max number of changes in a delta
+    metrics_namespace: development.filesync.server
+    multipart_threshold: 10485760  # (1024**2)*10 -> 10MB; 0 means disabled
+    protocol_weakref: False
+    s3_bucket: test
+    s3_fallback_bucket:
+    s3_retries: 2
+    s3_retry_wait: 0.1
+    servername: filesyncserver-development
+    sli_metric_namespace:
+    stats_log_interval: 0
+    status_port: 21102
+    storage_chunk_size: 5242880  # (1024**2)*5 -> 5MB (the min part size supported by S3)
+    tcp_port: 21100
+    trace_users: [test, etc]
+    upload_buffer_max_size: 10485761  # 10 MB + 1 byte
+
+ssl_proxy:
+    disable_ssl_compression: True
+    heartbeat_interval: 5
+    log_filename: ssl-proxy.log
+    metrics_namespace: development.filesync.ssl-proxy
+    port: 21101
+    server_name: ssl-proxy-dev
+    status_port: 21103
+
+aws_s3:
+    host: s3.local
+    port: 0
+    proxy_host: None
+    proxy_port: None
+    use_ssl: false
+
+storage_proxy:
+    port:
+
+keystone:
+    host: swift.local
+    port: 0
+
+statsd:
+    servers: localhost:8125
+
+oops:
+    path: tmp/oops
+
+updown:
+    public_url_prefix: http://some_url/p/
+    public_url_prefix_2: http://some_url/
+
+txlog:
+    enabled_to_user_ids_ending_in: 0-9
+    enabled_to_user_ids:
+
+database:
+    user: postgres
+    defaults:
+        options:
+            isolation: repeatable-read
+    shards:
+        new_user_shards: [shard0, shard1, shard2]
+        shard_ids: [shard0, shard1, shard2]
+    stores:
+        storage:
+            database: storage
+        shard0:
+            database: shard0
+        shard1:
+            database: shard1
+        shard2:
+            database: shard2
+        account:
+            database: account
+
+s_four:
+    log_filename: S4.log
+    storagepath: tmp/s4storage
+
+secret:
+    api_server_crt: |
+        -----BEGIN CERTIFICATE-----
+        MIICATCCAWoCCQDY0xhqKxs0sjANBgkqhkiG9w0BAQUFADBFMQswCQYDVQQGEwJB
+        VTETMBEGA1UECBMKU29tZS1TdGF0ZTEhMB8GA1UEChMYSW50ZXJuZXQgV2lkZ2l0
+        cyBQdHkgTHRkMB4XDTA4MDgyNTE5MzAwNloXDTE4MDgyMzE5MzAwNlowRTELMAkG
+        A1UEBhMCQVUxEzARBgNVBAgTClNvbWUtU3RhdGUxITAfBgNVBAoTGEludGVybmV0
+        IFdpZGdpdHMgUHR5IEx0ZDCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA57Ar
+        QyZ1xMz00hjRsQy893VhRNoFCB8X2Q8FmLG37S7E4HYhOs3DEytsTOlMBwaRLgRV
+        MfCGgtitVEFRmfP0qEMMduBUQSvXNFrqFnkDIbzizEjN+O1qiGB1n+nDcE9ZQdla
+        1ZrmihOfIsszBp4YNLmRWQqw/3OoXkSkXCWDWGsCAwEAATANBgkqhkiG9w0BAQUF
+        AAOBgQB2TQbXAy37NR2V+vvZ4u4X4cj6xrzNianOBQt7wxQUwlTGCpCwHoCYr+4U
+        5ycu2ryOTjtDjn+fCcr22eU2tq8in8feCRkuySLBO38DJ/tdZQf+/jI+BpsPQtOj
+        lygSAjyXyU6q/odDacnnKXT9cbSvab08uxm6W9xcvoJZdIkNUQ==
+        -----END CERTIFICATE-----
+    api_server_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIICXQIBAAKBgQDnsCtDJnXEzPTSGNGxDLz3dWFE2gUIHxfZDwWYsbftLsTgdiE6
+        zcMTK2xM6UwHBpEuBFUx8IaC2K1UQVGZ8/SoQwx24FRBK9c0WuoWeQMhvOLMSM34
+        7WqIYHWf6cNwT1lB2VrVmuaKE58iyzMGnhg0uZFZCrD/c6heRKRcJYNYawIDAQAB
+        AoGACOJPdl62K1q0lI3RFJnpcQ+2MB6wDLSshG04CLff1p9xey3sbkXPkh+bIoPb
+        n3VYAcy2u5h+f+vxEYcDqwSYv/xJCesqycNj/Vsbw+Wqo5AJ+5qssZ0E+VRt81SE
+        TEQ6fL5pjqZEUy6y++jZZ8eHdogVS3PkWZ55ZJw38eDfwMECQQD9ZJOFtLbBDK9c
+        o5mh8wEZ39qo9G12Nlo26m6a1ArWxLF+ybLyU/Es419sLY7MPGtsm9u3IDYfh3w8
+        +foWMwDLAkEA6hJsc05BW6M5MRilPRUYhRuh/yuFYfR5z5BPhCY5guTxPh1NdkBX
+        mZnHQl0dQ4Vk5xs6lRaXiC7Un2VOHJgy4QJBAN6dwwF/z+Nw6ou/65SdcoUx5t/y
+        xkxJ2h5O/dcmnVMsQSg7uewuFT+zjrzylXcXSeWEVJbhRMuUc3D6yV1Bd9sCQQCX
+        eLipnVh6HpQiC1rSvlYRvSIF6Hn2O6igAzkRwVKyO8lJctjvzw9hHLxvW6ZWTXpQ
+        e7RbSjVhMTzysTHtGyjBAkB7O/WSRpgq/gNdGIPTQCR1JxknqmcYR5XaI7vzDvaq
+        F2ZYp3D0lKgO/P4JeZhfNCpfp5n+ZEH4SU2DyF2/Jmxj
+        -----END RSA PRIVATE KEY-----
+    api_server_crt_chain:
+    aws_access_key_id: aws_key
+    aws_secret_access_key: aws_secret
+    django_secret_key: mzh6TVo}M/BBD}K&/ZE%GO39q%EBVGL(D3;%+PZ)p}de{W[qW~
+    graphite_admin_user: admin
+    graphite_admin_password: pwadmin

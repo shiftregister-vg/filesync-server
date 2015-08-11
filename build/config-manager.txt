@@ -1,0 +1,44 @@
+# Copyright 2008-2015 Canonical
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# For further info, check  http://launchpad.net/filesync-server
+
+# After making changes to this file, to ensure that your sourcedeps are
+# up-to-date do:
+#
+#   make clean-sourcedeps sourcedeps
+
+./.sourcecode/configglue                  ~configglue/configglue/trunk;revno=1
+./.sourcecode/dirspec                     ~ubuntuone-control-tower/dirspec/trunk;revno=14
+./.sourcecode/django-openid-auth          ~ubuntuone-pqm-team/django-openid-auth/stable;revno=103
+./.sourcecode/oauthlib                    ~ubuntuone-pqm-team/oauthlib/stable;revno=209
+./.sourcecode/oops                        ~canonical-launchpad-branches/python-oops/trunk;revno=37
+./.sourcecode/oops-datedir-repo           ~canonical-launchpad-branches/python-oops-datedir-repo/trunk;revno=48
+./.sourcecode/oops-timeline               ~canonical-launchpad-branches/python-oops-timeline/trunk;revno=3
+./.sourcecode/requests                    ~ubuntuone-pqm-team/requests/stable;revno=816
+./.sourcecode/requests_oauthlib           ~ubuntuone-pqm-team/requests-oauthlib/stable;revno=16
+./.sourcecode/ssoclient                   ~ubuntuone-pqm-team/canonical-identity-provider/ssoclient;revno=16
+./.sourcecode/storm                       ~storm/storm/trunk;revno=475
+./.sourcecode/timeline                    ~canonical-launchpad-branches/python-timeline/trunk;revno=10
+./.sourcecode/txstatsd                    ~txstatsd-dev/txstatsd/trunk;revno=109
+./.sourcecode/u1sync                      ~facundo/u1sync/opensourcing;revno=9
+./.sourcecode/ubuntu-sso-client           ~ubuntuone-control-tower/ubuntu-sso-client/trunk;revno=1030
+./.sourcecode/ubuntuone-client            ~facundo/ubuntuone-client/opensourcing;revno=1406
+./.sourcecode/ubuntuone-dev-tools         ~ubuntuone-control-tower/ubuntuone-dev-tools/trunk;revno=78
+./.sourcecode/s3lib                       ~facundo/s3lib/trunk;revno=2
+./.sourcecode/ubuntuone-storage-protocol  ~facundo/ubuntuone-storage-protocol/opensourcing;revno=165
+./.sourcecode/zope.component              ~ztk-steering-group/zope.component/trunk;revno=217
+./.sourcecode/zope.event                  ~ztk-steering-group/zope.event/trunk;revno=120
+./.sourcecode/zope.interface              ~ztk-steering-group/zope.interface/trunk;revno=252

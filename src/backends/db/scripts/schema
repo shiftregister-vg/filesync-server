@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+
+# Copyright 2008-2015 Canonical
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# For further info, check  http://launchpad.net/filesync-server
+
+import sys
+
+import transaction
+
+import backends.db.schemas.auth as auth_schema
+import backends.db.schemas.account as account_schema
+import backends.db.schemas.fsync_main as storage_main
+import backends.db.schemas.fsync_shard as storage_shard
+import backends.db.schemas.txlog as txlog_schema
+
+from backends.db.store import get_store
+from optparse import OptionParser
+
+
+schemas = {
+    'storage_main': storage_main,
+    'storage_shard': storage_shard,
+    'txlog': txlog_schema,
+    'account': account_schema,
+    'auth': auth_schema,
+}
+
+
+def main(argv):
+    parser = OptionParser()
+    parser.add_option("-H", "--host", dest="host", default=False,
+                      help="Connect to HOST. Defaults to socket in tmp/db",
+                      metavar="HOST")
+    parser.add_option("-a", "--all",
+                      dest="all", default=False, action="store_true",
+                      help="Create all schemas known")
+    parser.add_option("--shards",
+                      dest="shards", default=False, action="store_true",
+                      help="Use the shard stores")
+    parser.add_option("--store", dest="store_name",
+                      help="Used in conjunction with schema to upgrade one "
+                           "schema. Can't be used with the --shards options.")
+    parser.add_option("--schema", dest="schema_name",
+                      help="Used in conjunction with store to upgrade "
+                           "one schema")
+    parser.add_option("-d", "--dry-run",
+                      dest="dryrun", default=False, action="store_true",
+                      help="print SQL DDL rather than execute it")
+
+    (options, args) = parser.parse_args()
+
+    def create(schema_name, store_name):
+        """Create the schema using the store."""
+        schema = schemas[schema_name]
+        if options.dryrun:
+            print '*' * 80
+            print 'Dry run of %s schema in %s store' % (
+                schema_name, store_name)
+            print '*' * 80
+            ddl = schema.create_schema().preview()
+            print ddl
+        else:
+            target_store = get_store(store_name)
+            schema.create_schema().upgrade(target_store)
+
+    from backends.filesync.data.dbmanager import get_shard_ids
+    if options.all:
+        # NOTE: DO NOT add schemas here until they are actually used in
+        #       production. This is important as it may block others.
+        #       To use the schema locally until the code is ready for producion
+        #       modify the Makefile to create the schema separately
+        create('auth', 'account')
+        create('account', 'account')
+        create('storage_main', 'storage')
+
+        shards = get_shard_ids()
+        for shardid in shards:
+            create('storage_shard', shardid)
+            create('txlog', shardid)
+    elif options.store_name and options.schema_name:
+        create(options.schema_name, options.store_name)
+    elif options.schema_name and options.shards:
+        for shardid in get_shard_ids():
+            create(options.schema_name, shardid)
+    else:
+        print "Must be called with --all or --schema and --store or --shards"
+
+    transaction.commit()
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv))

@@ -1,0 +1,61 @@
+http_port {port}
+
+acl localhost src 127.0.0.1/32
+acl to_localhost dst 127.0.0.0/8
+acl CONNECT method CONNECT
+acl PURGE method PURGE
+acl proxy_ports myport {port}
+
+acl manager url_regex -i ^cache_object:// /squid-internal-mgr/
+http_access allow manager localhost
+http_access deny manager
+
+logformat combined %>a %ui %un [%tl] "%rm %ru HTTP/%rv" %Hs %<st "%{{Referer}}>h" "%{{User-Agent}}>h" %Ss:%Sh
+access_log {tmpdir}/{service_name}-access.log combined
+cache_log {tmpdir}/{service_name}.log
+cache_store_log none
+pid_filename {tmpdir}/{service_name}.pid
+
+hosts_file /etc/hosts
+
+coredump_dir {tmpdir}/{service_name}
+maximum_object_size 10 MB
+cache_dir aufs {tmpdir}/{service_name} 512 3 48
+
+cache_mem 8 MB
+
+log_mime_hdrs on
+
+refresh_pattern .               30      20%     4320
+
+acl l1_src src 127.0.0.0/16
+
+acl s3_dstdomain dstdomain {s3_dstdomain}
+http_access allow l1_src s3_dstdomain
+
+acl swift_dstdomain dstdomain {swift_dstdomain}
+http_access allow l1_src swift_dstdomain
+
+always_direct deny s3_dstdomain
+never_direct allow s3_dstdomain
+
+always_direct deny swift_dstdomain
+never_direct allow swift_dstdomain
+
+read_ahead_gap 1 MB
+
+cache_peer 127.0.0.1 parent {s3_dstport} 0 name=s3 {s3_dstssl} proxy-only originserver no-query no-digest no-netdb-exchange max-conn=8 login=PASS
+cache_peer_access s3 allow s3_dstdomain
+cache_peer_access s3 deny all
+
+cache_peer 127.0.0.1 parent {swift_dstport} 0 name=swift {swift_dstssl} proxy-only originserver no-query no-digest no-netdb-exchange max-conn=8 login=PASS
+cache_peer_access s3 allow swift_dstdomain
+cache_peer_access s3 deny all
+
+http_access allow PURGE localhost
+# deny silly methods
+http_access deny PURGE
+http_access deny CONNECT
+http_access deny proxy_ports all
+http_access deny all
+icp_access deny all

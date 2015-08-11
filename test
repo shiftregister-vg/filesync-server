@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+# Copyright 2008-2015 Canonical
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+# For further info, check  http://launchpad.net/filesync-server
+
+"""Run tests."""
+
+import os
+import sys
+import warnings
+
+warnings.simplefilter("ignore")
+sys.path.insert(0, os.path.abspath('lib'))
+
+TESTDIRS = [
+    'src',
+    'lib/ubuntuone/storage/tests',
+    'lib/metrics/tests',
+    'lib/ubuntuone/monitoring/tests',
+    'lib/ubuntuone/supervisor/tests',
+    'lib/ubuntuone/txutils/tests',
+    'lib/tests',
+]
+for td in TESTDIRS:
+    sys.path.insert(0, os.path.abspath(td))
+
+
+def setup_environment(django_settings):
+    """Setup the envrionment for running tests."""
+    ROOTDIR = os.path.abspath(os.path.curdir)
+    os.environ['CONFIG'] = os.path.join(ROOTDIR, 'configs', "development.yaml")
+    os.environ["DJANGO_SETTINGS_MODULE"] = django_settings
+    os.environ["XDG_CACHE_HOME"] = os.path.join(ROOTDIR, 'tmp', 'xdg_cache')
+
+    dbus_address_file = os.path.join(ROOTDIR, 'tmp', 'dbus.address')
+    if os.path.exists(dbus_address_file):
+        with open(dbus_address_file) as fh:
+            os.environ["DBUS_SESSION_BUS_ADDRESS"] = fh.read().strip()
+
+    # install the glib2reactor before any import of the reactor to avoid
+    # using the default SelectReactor and be able to run the dbus tests
+    from twisted.internet import glib2reactor
+    glib2reactor.install()
+
+
+if __name__ == "__main__":
+    from optparse import OptionParser
+    usage = '%prog [options] path'
+    parser = OptionParser(usage=usage)
+    parser.add_option("-c", "--coverage", dest="coverage", action='store_true',
+                      help="run test coverage")
+    parser.add_option("-d", "--debug", dest="debug", action='store_true',
+                      help="set twisted.internet.base.DelayedCall.debug=True")
+    parser.add_option("-t", "--test", dest="test",
+                      help="run specific tests, e.g: className.methodName")
+    parser.add_option("-i", "--ignore", dest="ignore",
+                      help="ignore/skip specific tests, "
+                           "e.g: className.methodName")
+    parser.add_option("-l", "--loop", dest="loops", type="int", default=1,
+                      help="loop selected tests LOOPS number of times",
+                      metavar="LOOPS")
+    parser.add_option("-1", "--one", dest="one", action='store_true',
+                      help="Stop when one test fails")
+    parser.add_option("--subunit", dest="subunit", action='store_true',
+                      help="Use the subunit reporter.", default=False)
+    parser.add_option("-e", "--logs-on-failure", dest="logs_on_failure",
+                      action='store_true',
+                      help="Show logs on stdout if error or failure")
+
+    (options, args) = parser.parse_args()
+
+    from utilities.testlib import test_with_trial
+
+    setup_environment("backends.testing.testdjangosettings")
+    testroots = args
+    topdir = os.path.abspath(os.path.dirname(__file__))
+    status = test_with_trial(options, topdir, TESTDIRS, testroots)
+
+    if sys.stdout.isatty():
+        if status:
+            os.system('cat dev-scripts/failure.txt')
+        else:
+            os.system('cat dev-scripts/success.txt')
+    sys.exit(status)

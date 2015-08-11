@@ -1,0 +1,6 @@
+#!/bin/bash
+ROOT=$(dirname $0)/..
+NAME=$(basename $0)
+
+export PYTHONPATH="$ROOT/lib"
+/usr/bin/supervisorctl -c $ROOT/tmp/${NAME/supervisorctl/supervisor}.conf $*
